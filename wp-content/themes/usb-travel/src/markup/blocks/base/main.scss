@@ -1,0 +1,99 @@
+@import "~frontend-scss-mixins/mixins";
+@import "~glightbox/dist/css/glightbox.min.css";
+@import "./mixins";
+@import "./variables";
+@import "./media-queries";
+
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+:root {
+
+  --white-color: #fff;
+  --black-color: #2b2b2b;
+
+  --main-color-base: 200;
+  --natural-color-base: 0;
+  --error-color-base: 0;
+  --success-color-base: 100;
+  --warning-color-base: 46;
+
+  --main-color: hsla(var(--main-color-base), 100%, 50%, 1);
+  --light-main-color: hsla(var(--main-color-base), 100%, 80%, 1);
+  --extra-light-main-color: hsla(var(--main-color-base), 100%, 90%, 1);
+  --super-light-main-color: hsla(var(--main-color-base), 100%, 98%, 1);
+
+  --natural-color: hsla(var(--natural-color-base), 0%, 70%, 1);
+  --light-natural-color: hsla(var(--natural-color-base), 0%, 95%, 1);
+  --extra-light-natural-color: hsla(var(--natural-color-base), 0%, 98%, 1);
+  --super-light-natural-color: hsla(var(--natural-color-base), 0%, 99%, 1);
+
+  --error-color: hsla(var(--error-color-base), 100%, 50%, 1);
+  --light-error-color: hsla(var(--error-color-base), 100%, 80%, 1);
+  --extra-light-error-color: hsla(var(--error-color-base), 100%, 90%, 1);
+  --super-light-error-color: hsla(var(--error-color-base), 100%, 90%, .2);
+
+  --success-color: hsla(var(--success-color-base), 100%, 50%, 1);
+  --light-success-color: hsla(var(--success-color-base), 100%, 80%, 1);
+  --extra-light-success-color: hsla(var(--success-color-base), 100%, 90%, 1);
+  --super-light-success-color: hsla(var(--success-color-base), 100%, 90%, .2);
+
+  --warning-color: hsla(var(--warning-color-base), 100%, 50%, 1);
+  --light-warning-color: hsla(var(--warning-color-base), 100%, 80%, 1);
+  --extra-light-warning-color: hsla(var(--warning-color-base), 100%, 90%, 1);
+  --super-light-warning-color: hsla(var(--warning-color-base), 100%, 98%, 1);
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+  transition: none;
+  -webkit-tap-highlight-color: transparent;
+  font-family: 'PT Sans', sans-serif;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+body {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-shadow: none;
+  margin: 0;
+  @include font400;
+  background: var(--white-color);
+  color: var(--black-color);
+}
+
+a {
+  text-decoration: none;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+ul {
+  list-style: none;
+  display: block;
+}
+
+button, input, textarea {
+  border: none;
+  background: none;
+  display: block;
+}
+
+button:active, input:active, textarea:active,
+button:focus, input:focus, textarea:focus {
+  outline: none;
+}
