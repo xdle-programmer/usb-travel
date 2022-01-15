@@ -15,7 +15,47 @@
 get_header();
 ?>
 
-	<div>Главная страница</div>
+    <div>Главная страница</div>
+
+<?php
+echo '<pre>';
+
+function getCampsIds()
+{
+    $args = array(
+        'post_type' => 'camp',
+        'numberposts' => 100
+    );
+
+    $camps = get_posts($args);
+    $campsIds = [];
+
+
+    foreach ($camps as $camp) {
+
+        echo '<br>';
+        echo $camp->ID . '  ' . get_the_title($camp->ID) . $camp->ID . '12312312312313----------';
+        echo '<br>';
+        echo '<br>';
+        echo '<br>';
+        echo '<br>';
+        echo '<br>';
+
+        $campsIds[] = $camp->ID;
+    }
+
+
+    return $campsIds;
+}
+
+//function getCamp()
+//{
+//}
+
+
+print_r(getCampsIds());
+echo '</pre>';
+?>
 
 <?php
 
