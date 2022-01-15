@@ -21,14 +21,19 @@ function register_camps_post_type()
     $labels = array(
         'name' => _x('Лагеря', 'post type general name'),
         'singular_name' => _x('Лагерь', 'post type singular name'),
+        'add_new' => 'Добавить лагерь'
     );
     // Set various pieces of information about the post type
     $args = array(
         'labels' => $labels,
         'description' => 'Лагеря',
         'public' => true,
+        'menu_position' => 2,
+        'menu_icon' => 'dashicons-admin-multisite'
     );
-    // Register the movie post type with all the information contained in the $arguments array
+
+//    menu_icon
+
     register_post_type('camp', $args);
 }
 
@@ -55,7 +60,6 @@ function camps_columns_content($column_name, $post_ID)
     }
 }
 
-
 // Инициализируем добавление кастомных типов записей для стран
 add_action('init', 'register_countries_post_type');
 
@@ -64,14 +68,15 @@ function register_countries_post_type()
     $labels = array(
         'name' => _x('Страны', 'post type general name'),
         'singular_name' => _x('Страна', 'post type singular name'),
+        'add_new' => 'Добавить страну'
     );
-    // Set various pieces of information about the post type
+
     $args = array(
         'labels' => $labels,
         'description' => 'Страны',
         'public' => true,
     );
-    // Register the movie post type with all the information contained in the $arguments array
+
     register_post_type('country', $args);
 }
 
@@ -84,6 +89,7 @@ function register_trips_post_type()
     $labels = array(
         'name' => _x('Поездки', 'post type general name'),
         'singular_name' => _x('Поездка', 'post type singular name'),
+        'add_new' => 'Добавить поездку'
     );
 
     // Set various pieces of information about the post type
@@ -91,8 +97,59 @@ function register_trips_post_type()
         'labels' => $labels,
         'description' => 'Поездки',
         'public' => true,
+        'menu_position' => 2,
+        'menu_icon' => 'dashicons-airplane'
     );
-    // Register the movie post type with all the information contained in the $arguments array
+
     register_post_type('trip', $args);
 }
 
+add_filter('manage_trip_posts_columns', 'trips_columns_head', 10);
+add_action('manage_trip_posts_custom_column', 'trips_columns_content', 10, 2);
+
+function trips_columns_head($defaults)
+{
+    $defaults['camp'] = 'Лагерь';
+    unset($defaults['date']);
+    return $defaults;
+}
+
+function trips_columns_content($column_name, $post_ID)
+{
+    if ($column_name == 'id') {
+        echo $post_ID;
+    }
+
+    if ($column_name == 'camp') {
+        $countryId = get_field('лагерь', $post_ID);
+        echo get_the_title($countryId);
+    }
+}
+
+//Функция замены id лагеря с любого языка на русский, для корректной привязки
+add_filter('wp_insert_post_data', 'replace_camp_id_in_trip', 10, 2);
+
+function replace_camp_id_in_trip($data)
+{
+    if ($data['post_type'] !== 'trip') {
+        return $data;
+    }
+
+    $campFieldName = 'field_61e2a01badc25';
+
+    $currentCamp = $_POST['acf'][$campFieldName];
+    $ruCamp = apply_filters('wpml_object_id', $currentCamp, 'post', TRUE, 'ru');
+    $_POST['acf'][$campFieldName] = $ruCamp;
+
+    return $data;
+}
+
+
+//// Создаем массив данных новой записи
+//    $post_data = array(
+//        'post_title' => 'Тайтл из функции внутри, ага',
+//        'post_type' => 'trip',
+//    );
+//
+//    // Вставляем запись в базу данных
+//    $post_id = wp_insert_post($post_data);
