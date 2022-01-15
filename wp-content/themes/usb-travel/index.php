@@ -24,7 +24,7 @@ function getCampsIds()
 {
     $args = array(
         'post_type' => 'camp',
-        'numberposts' => 100
+        'numberposts' => -1,
     );
 
     $camps = get_posts($args);
@@ -33,9 +33,13 @@ function getCampsIds()
 
     foreach ($camps as $camp) {
 
+        $link = apply_filters('wpml_object_id', $camp->ID, 'post', TRUE, 'ru');
+
+//        icl_object_id( get_the_ID(), $post_type, false, ICL_LANGUAGE_CODE ); // Returns the ID of the current custom post
+
         echo '<br>';
-        echo $camp->ID . '  ' . get_the_title($camp->ID) . $camp->ID . '12312312312313----------';
-        echo '<br>';
+//        echo $camp->ID . '  ' . get_the_title($camp->ID) . $camp->ID . '12312312312313----------';
+        echo $link;
         echo '<br>';
         echo '<br>';
         echo '<br>';
@@ -43,7 +47,6 @@ function getCampsIds()
 
         $campsIds[] = $camp->ID;
     }
-
 
     return $campsIds;
 }

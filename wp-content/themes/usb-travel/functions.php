@@ -76,3 +76,23 @@ function register_countries_post_type()
 }
 
 
+// Инициализируем добавление кастомных типов записей для поездок
+add_action('init', 'register_trips_post_type');
+
+function register_trips_post_type()
+{
+    $labels = array(
+        'name' => _x('Поездки', 'post type general name'),
+        'singular_name' => _x('Поездка', 'post type singular name'),
+    );
+
+    // Set various pieces of information about the post type
+    $args = array(
+        'labels' => $labels,
+        'description' => 'Поездки',
+        'public' => true,
+    );
+    // Register the movie post type with all the information contained in the $arguments array
+    register_post_type('trip', $args);
+}
+

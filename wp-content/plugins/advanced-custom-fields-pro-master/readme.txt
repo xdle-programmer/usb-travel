@@ -1,5 +1,5 @@
-=== Advanced Custom Fields ===
-Contributors: deliciousbrains, bradt, elliotcondon
+=== Advanced Custom Fields Pro ===
+Contributors: elliotcondon
 Tags: acf, fields, custom fields, meta, repeater
 Requires at least: 4.7
 Tested up to: 5.8.1
