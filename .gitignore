@@ -1,4 +1,5 @@
 /node_modules
+/wp-content/plugins/indigo-trips-load/node_modules
 /public/hot
 /wp-admin
 /wp-includes

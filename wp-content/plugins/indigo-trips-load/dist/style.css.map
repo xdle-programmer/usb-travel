@@ -1,0 +1,1 @@
+{"version":3,"file":"style.css","mappings":"AAAA;EACE,iBAAiB","sources":["webpack://Usb-travel/./src/scss/style.scss"],"sourcesContent":[".test {\r\n  background: green;\r\n}\r\n"],"names":[],"sourceRoot":""}

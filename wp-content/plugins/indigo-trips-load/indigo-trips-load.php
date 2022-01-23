@@ -20,15 +20,6 @@ function top_tags_register_admin_page()
         'indigo_trips_load_render_admin_page',
         'dashicons-cloud-upload'
     );
-//
-//    add_submenu_page(
-//        'edit.php',
-//        'ТОП теги для категорий',
-//        'ТОП теги',
-//        'manage_categories',
-//        'top-tags',
-//        'top_tags_render_admin_page'
-//    );
 }
 
 function indigo_trips_load_render_admin_page()
@@ -52,18 +43,17 @@ function indigo_trips_load_render_admin_page()
 //    wp_die();
 //}
 
-function loadMyScript()
+function loadScripts()
 {
-
-//    print_r(plugin_dir_path(__FILE__) . 'js/load.js');
-
-    wp_register_script('load', plugins_url('/js/load.js', __FILE__));
-
+    wp_register_script('load', plugins_url('/dist/scripts.js', __FILE__));
     wp_enqueue_script('load');
-
 }
 
-add_action('admin_enqueue_scripts', 'loadMyScript');
-//add_action('wp_enqueue_scripts', 'loadMyScript');
+function loadStyles() {
+    wp_register_style('load', plugins_url('/dist/style.css', __FILE__));
+    wp_enqueue_style('load');
+}
 
+add_action('admin_enqueue_scripts', 'loadScripts');
+add_action('admin_enqueue_scripts', 'loadStyles');
 ?>
