@@ -1,4 +1,8 @@
+import {loadFile} from './js/load';
+
 document.addEventListener('DOMContentLoaded', () => {
-    let $button = document.querySelector('.test');
-    console.log(1111111);
+    const $input = document.getElementById('trip-upload');
+    const $wrapper = document.getElementById('trip-upload-table-check');
+
+    loadFile({$input, $wrapper});
 });
