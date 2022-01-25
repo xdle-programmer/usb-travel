@@ -49,6 +49,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var xlsx_dist_xlsx_full_min_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! xlsx/dist/xlsx.full.min.js */ "./node_modules/xlsx/dist/xlsx.full.min.js");
 /* harmony import */ var xlsx_dist_xlsx_full_min_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(xlsx_dist_xlsx_full_min_js__WEBPACK_IMPORTED_MODULE_0__);
 
+
+function excelDateToJSDate(date) {
+  return new Date(Math.round((date - 25569) * 86400 * 1000));
+}
+
 function loadFile(options) {
   const {
     $input
@@ -93,13 +98,59 @@ function loadFile(options) {
     };
   }
 
-  function creatHtmlTable(tripObject) {
-    if (!tripObject) {
+  function creatHtmlTable(tripArray) {
+    if (!tripArray) {
       $wrapper.innerHTML = '';
       return;
     }
 
-    console.log(tripObject); // Формируем количество столбцов
+    const dateKey = 'Выезд';
+    const ageTypes = ['Взрослые', 'Дети'];
+    const countDaysRow = 0;
+    const countNightsRow = 2;
+    const ageRow = 3;
+    const startValuesRow = 4; // Готовим массив для типов поездок
+
+    let tripsTypes = []; // Разбираем первую строку массива для формирования типов поездок
+
+    for (let key in tripArray[0]) {
+      if (key === dateKey) {
+        continue;
+      }
+
+      let tripType = {
+        countDays: tripArray[countDaysRow][key],
+        countNights: tripArray[countNightsRow][key],
+        age: ageTypes.indexOf(tripArray[ageRow][key]),
+        key
+      };
+      tripsTypes.push(tripType);
+    } // Готовим массив для поездок
+
+
+    let trips = []; // Разбираем массив, начиная со стартовой строки
+
+    for (let index = startValuesRow; index < tripArray.length; index++) {
+      for (let tripType of tripsTypes) {
+        let trip = { ...tripType
+        };
+
+        if (isNaN(parseInt(tripArray[index][trip.key]))) {
+          continue;
+        }
+
+        trip.date = excelDateToJSDate(tripArray[index][dateKey]);
+        trip.price = tripArray[index][trip.key];
+        trips.push(trip);
+      }
+    }
+
+    console.log(trips);
+
+    for (let trip of trips) {
+      console.log(trip);
+    } // Формируем количество столбцов
+
   }
 }
 
