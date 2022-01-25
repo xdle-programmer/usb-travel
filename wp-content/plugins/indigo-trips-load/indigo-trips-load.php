@@ -49,11 +49,79 @@ function loadScripts()
     wp_enqueue_script('load');
 }
 
-function loadStyles() {
+function loadStyles()
+{
     wp_register_style('load', plugins_url('/dist/style.css', __FILE__));
     wp_enqueue_style('load');
 }
 
 add_action('admin_enqueue_scripts', 'loadScripts');
 add_action('admin_enqueue_scripts', 'loadStyles');
+
+//Функция получения объекта лагерей
+function getCampsValues()
+{
+//Получаем все лагеря
+    $args = array(
+        'post_type' => 'camp',
+        'numberposts' => -1,
+    );
+
+    $camps = get_posts($args);
+
+// Собираем ID лагерей
+    $links = [];
+    foreach ($camps as $camp) {
+        $link = apply_filters('wpml_object_id', $camp->ID, 'post', TRUE, 'ru');
+        $links[] = $link;
+    }
+
+//Формируем массив русских ID и тайтлов
+    $linksUnique = array_unique($links);
+    $campsUnique = [];
+    foreach ($linksUnique as $link) {
+        $camp = array(
+            'id' => $link,
+            'title' => get_the_title($link),
+        );
+
+        $campsUnique[] = $camp;
+    }
+
+    return $campsUnique;
+
+}
+
+//Функция получения объекта лагерей
+function getTripsTypesValues()
+{
+//Получаем все лагеря
+    $args = array(
+        'post_type' => 'trip-type',
+        'numberposts' => -1,
+    );
+
+    $tripsTypesPosts = get_posts($args);
+
+    $tripsTypes = [];
+    foreach ($tripsTypesPosts as $tripTypePost) {
+        $trip = array(
+            'id' => $tripTypePost->ID,
+            'title' => $tripTypePost->post_title,
+        );
+
+        $tripsTypes[] = $trip;
+    }
+
+    return $tripsTypes;
+
+}
+
+
+function createSelectOptions($array) {
+    foreach ($array as $arrayItem) {
+        echo '<option value="' . $arrayItem['id'] . '">' . $arrayItem['title'] . '</option>';
+    }
+}
+
 ?>

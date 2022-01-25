@@ -1,1 +1,0 @@
-{"version":3,"file":"scripts.js","mappings":";;;;;AAAAA,OAAO,CAACC,GAAR,CAAY,cAAZ,E","sources":["webpack://Usb-travel/./src/index.js"],"sourcesContent":["console.log('plugin index');\r\n"],"names":["console","log"],"sourceRoot":""}
