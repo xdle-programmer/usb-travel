@@ -9,6 +9,17 @@
     </div>
 
     <div class="trip-load__controls trip-load__hidden" id="trip-load-controls">
+
+        <div class="trip-load__controls-item">
+            <!--Выбор транспорта-->
+            <select id="trip-load-transport-select">
+                <option value="default">Выберите транспорт</option>
+                <option value="avia">Авиа</option>
+                <option value="bus">Автобус</option>
+                <option value="none">Без трансфера</option>
+            </select>
+        </div>
+
         <div class="trip-load__controls-item">
             <!--Выбор лагерей-->
             <select id="trip-load-camp-select">

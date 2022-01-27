@@ -27,6 +27,7 @@ export function loadFile($wrapper) {
     const $tableWrapper = $wrapper.querySelector('#trip-load-table-check-wrapper');
     const $campSelect = $wrapper.querySelector('#trip-load-camp-select');
     const $typeSelect = $wrapper.querySelector('#trip-load-type-select');
+    const $transportSelect = $wrapper.querySelector('#trip-load-transport-select');
     const $inputWrapper = $wrapper.querySelector('#trip-load-file-input-wrapper');
     const $input = $wrapper.querySelector('#trip-load-file-input');
     const $table = $wrapper.querySelector('#trip-load-table-check');
@@ -46,6 +47,10 @@ export function loadFile($wrapper) {
 
         const typeSelect = new Select({
             $select: $typeSelect,
+        });
+
+        const transportSelect = new Select({
+            $select: $transportSelect,
         });
 
         $header.classList.remove(classHidden);
