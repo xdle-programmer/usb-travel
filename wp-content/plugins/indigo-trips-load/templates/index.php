@@ -14,9 +14,7 @@
             <!--Выбор транспорта-->
             <select id="trip-load-transport-select">
                 <option value="default">Выберите транспорт</option>
-                <option value="avia">Авиа</option>
-                <option value="bus">Автобус</option>
-                <option value="none">Без трансфера</option>
+                <?php createSelectOptions(getTransportTypeValues()); ?>
             </select>
         </div>
 
@@ -50,6 +48,7 @@
 
     <div class="trip-load__table-wrapper trip-load__hidden" id="trip-load-table-check-wrapper">
         <div class="trip-load__table-wrapper" id="trip-load-table-check"></div>
+        <div class="trip-load__table-load-button" id="trip-load-table-load-button">Загрузить поездки на сайт</div>
     </div>
 </div>
 

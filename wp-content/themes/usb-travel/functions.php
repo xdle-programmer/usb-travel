@@ -116,15 +116,40 @@ add_action('manage_trip_posts_custom_column', 'trips_columns_content', 10, 2);
 //Функция замены id лагеря с любого языка на русский, для корректной привязки
 function replace_camp_id_in_trip($data)
 {
-    if ($data['post_type'] !== 'trip') {
+    if ($data['post_type'] !== 'trip' && $data['post_type'] !== 'camp') {
         return $data;
     }
 
-    $campFieldName = 'field_61e2a01badc25';
 
-    $currentCamp = $_POST['acf'][$campFieldName];
-    $ruCamp = apply_filters('wpml_object_id', $currentCamp, 'post', TRUE, 'ru');
-    $_POST['acf'][$campFieldName] = $ruCamp;
+    $campFieldName = 'field_61e2a01badc25';
+    $typeFieldName = 'field_61fd3ca13a4dd';
+    $transportTypeFieldName = 'field_61fd3c743a4dc';
+    $countDaysFieldName = 'field_61fd3cd43a4de';
+    $countNightsFieldName = 'field_61fd3cfa3a4df';
+    $priceFieldName = 'field_61fd3d233a4e0';
+    $dateFieldName = 'field_61fd3d3f3a4e1';
+    $ageFieldName = 'field_61fe4e0d732bf';
+    $countryFieldName = 'field_61e27ce8f7de4';
+
+    if ($data['post_type'] === 'trip') {
+        $currentCamp = $_POST['acf'][$campFieldName];
+        $ruCamp = apply_filters('wpml_object_id', $currentCamp, 'post', TRUE, 'ru');
+        $_POST['acf'][$campFieldName] = $ruCamp;
+
+        $currentType = $_POST['acf'][$typeFieldName];
+        $ruType = apply_filters('wpml_object_id', $currentType, 'post', TRUE, 'ru');
+        $_POST['acf'][$typeFieldName] = $ruType;
+
+        $currentTransportType = $_POST['acf'][$transportTypeFieldName];
+        $ruTransportType = apply_filters('wpml_object_id', $currentTransportType, 'post', TRUE, 'ru');
+        $_POST['acf'][$transportTypeFieldName] = $ruTransportType;
+    } else if ($data['post_type'] === 'camp') {
+        $currentCountry = $_POST['acf'][$countryFieldName];
+        $ruCountry = apply_filters('wpml_object_id', $currentCountry, 'post', TRUE, 'ru');
+        $_POST['acf'][$countryFieldName] = $ruCountry;
+
+    }
+
 
     return $data;
 }
@@ -184,6 +209,32 @@ function register_countries_post_type()
 
 add_action('init', 'register_countries_post_type');
 
+/**
+ * Типы транспорта
+ * Записи типов стран и управления страницами вывода
+ */
+
+// Инициализируем добавление кастомных типов записей для стран
+function register_transport_post_type()
+{
+    $labels = array(
+        'name' => _x('Тип транспорта', 'post type general name'),
+        'singular_name' => _x('Тип транспорта', 'post type singular name'),
+        'add_new' => 'Добавить тип транспорта'
+    );
+
+    $args = array(
+        'labels' => $labels,
+        'description' => 'Тип транспорта',
+        'public' => true,
+        'menu_icon' => 'dashicons-car'
+    );
+
+    register_post_type('transport_type', $args);
+}
+
+add_action('init', 'register_transport_post_type');
+
 
 /**
  * Настройки админки.
@@ -194,8 +245,8 @@ function wpse_custom_menu_order($menu_ord)
     if (!$menu_ord) return true;
 
     return array(
-        'edit.php?post_type=camp', // Лагеря
         'edit.php?post_type=page', // Страницы
+        'edit.php?post_type=trip', // Поездки
         'upload.php', // Медиа
 
         'separator1', // Разделитель
@@ -203,9 +254,10 @@ function wpse_custom_menu_order($menu_ord)
         'indigo-trips-load', // Загрузка поездок
 
         'separator2',  // Разделитель
-        'edit.php?post_type=trip', // Поездки
         'edit.php?post_type=trip-type', // Типы поездок
+        'edit.php?post_type=camp', // Лагеря
         'edit.php?post_type=country', // Страны
+        'edit.php?post_type=transport_type', // Тип транспорта
         'separator-last', // Разделитель
 
         'link-manager.php', // Links
@@ -231,4 +283,148 @@ function admin_styles()
 }
 
 add_action('admin_enqueue_scripts', 'admin_styles');
+
+/**
+ * Настройки параметров поиска.
+ */
+add_filter('query_vars', function ($vars) {
+    $vars[] = 'search_country';
+    $vars[] = 'search_camp';
+    $vars[] = 'number_people';
+    $vars[] = 'transfer';
+    $vars[] = 'count_days';
+    $vars[] = 'count_nights';
+    $vars[] = 'trip_date';
+    return $vars;
+});
+
+
+//Функция поиска поездок
+function getTrips($options = array())
+{
+    $args = array(
+        'post_type' => 'trip',
+        'numberposts' => -1,
+        'meta_query' => array(array(
+            'key' => 'лагерь',
+            'value' => '314',
+        )),
+    );
+
+    $trips = get_posts($args);
+    return $trips;
+}
+
+//Функция вывода поездок
+function createTripsTable($trips, $options = array())
+{
+
+    echo '<div class="trip-table">';
+
+    function createUniqueColKeys($trips)
+    {
+        $rawColKeys = [];
+
+        foreach ($trips as $trip) {
+            $meta = get_post_meta($trip->ID);
+
+            $countDaysKey = 'cd' . $meta['количество_дней'][0];
+            $countNightsKey = 'cn' . $meta['количество_ночей'][0];
+            $ageKey = 'age' . $meta['возраст'][0];
+            $colKey = $countDaysKey . $countNightsKey . $ageKey;
+            $rawColKeys[] = $colKey;
+        }
+
+        $colKeys = array_unique($rawColKeys);
+        $colKeysArray = array();
+
+        foreach ($colKeys as $colKey) {
+            echo $colKey;
+            $col = array();
+            $col['countDays'] = explode('cn', explode('cd', $colKey)[1])[0];
+            $col['countNights'] = explode('age', explode('cn', $colKey)[1])[0];
+            $col['age'] = explode('age', $colKey)[1];
+            $colKeysArray[] = $col;
+        }
+
+        $colKeysGroupedArray = array();
+
+        foreach ($colKeysGroupedArray as $colKey) {
+
+        }
+
+        return $colKeysArray;
+    }
+
+    $colKeys = createUniqueColKeys($trips);
+
+    function createHeader($colKeys)
+    {
+        $cellClass = 'trip-table__cell';
+
+        $dateCell = '<div class="' . $cellClass . '">Дата</div class="' . $cellClass . '">';
+        $countryCell = '<div class="' . $cellClass . '">Страна</div>';
+        $campCell = '<div class="' . $cellClass . '">Лагерь</div>';
+        $typeCell = '<div class="' . $cellClass . '">Группа</div>';
+        $transportCell = '<div class="' . $cellClass . '">Трансфер</div>';
+
+        echo '<div class="trip-table__row trip-table__row--header">';
+
+        echo $dateCell;
+        echo $countryCell;
+        echo $campCell;
+        echo $typeCell;
+        echo $transportCell;
+
+        foreach ($colKeys as $colKey) {
+            echo '<div class="' . $cellClass . '">' . $colKey . '</div>';
+        }
+
+        echo '</div>';
+    }
+
+    createHeader($colKeys);
+
+    echo '<pre>';
+    print_r($colKeys);
+    echo '<br>';
+    echo '</pre>';
+//    Страна	Лагерь	Формат	Трансфер	Дата
+
+
+    echo '</div>';
+    return;
+
+    foreach ($trips as $trip) {
+
+        echo '<pre>';
+//        print_r($trip);
+        echo _e('Good morning', 'usb-travel');
+        echo '<br>';
+        echo $trip->ID;
+
+
+        echo '</pre>';
+
+        echo '<br>';
+        echo the_field('лагерь', $trip->ID);
+        echo '<br>';
+        echo '<br>';
+//        echo the_field('тип_транспорта', $trip->ID);
+//        echo '<br>';
+//        echo the_field('тип_поездки', $trip->ID);
+//        echo '<br>';
+//        echo the_field('количество_дней', $trip->ID);
+//        echo '<br>';
+//        echo the_field('количество_ночей', $trip->ID);
+//        echo '<br>';
+//        echo the_field('цена_в_евро', $trip->ID);
+//        echo '<br>';
+//        echo the_field('дата_поездки', $trip->ID);
+//        echo '<br>';
+//        echo '<br>';
+//        echo '<br>';
+
+    }
+}
 

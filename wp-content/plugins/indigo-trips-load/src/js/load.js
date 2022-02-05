@@ -2,6 +2,8 @@ import XLSX from 'xlsx/dist/xlsx.full.min.js';
 import {Select} from '../custom-select/custom-select';
 import {formatDate, moment} from '../index';
 
+export const axios = require('axios');
+
 function excelDateToJSDate(date) {
     return new Date(Math.round((date - 25569) * 86400 * 1000));
 }
@@ -13,10 +15,10 @@ export function loadFile($wrapper) {
     const classHidden = `${classPrefix}__hidden`;
     const classLoading = `${classPrefix}--loading`;
 
-    const classRow = `${classPrefix}__row`
-    const classCell = `${classPrefix}__cell`
-    const classCellInner = `${classPrefix}__cell-inner`
-    const classCellHeader = `${classPrefix}__cell--header`
+    const classRow = `${classPrefix}__row`;
+    const classCell = `${classPrefix}__cell`;
+    const classCellInner = `${classPrefix}__cell-inner`;
+    const classCellHeader = `${classPrefix}__cell--header`;
 
     const defaultValue = `default`;
     const dateKey = 'Выезд';
@@ -32,7 +34,9 @@ export function loadFile($wrapper) {
     const $input = $wrapper.querySelector('#trip-load-file-input');
     const $table = $wrapper.querySelector('#trip-load-table-check');
     const $error = $wrapper.querySelector('#trip-load-error');
+    const $sendButton = $wrapper.querySelector('#trip-load-table-load-button');
 
+    let tripsArray = null;
 
     init();
 
@@ -55,7 +59,6 @@ export function loadFile($wrapper) {
 
         $header.classList.remove(classHidden);
         $controls.classList.remove(classHidden);
-        $tableWrapper.classList.remove(classHidden);
         $wrapper.classList.remove(classLoading);
     }
 
@@ -67,19 +70,25 @@ export function loadFile($wrapper) {
             $error.classList.add(classHidden);
 
             if (!file) {
-                createTable(null);
+                tripsArray = null;
+                createTable();
             } else {
 
                 const nameArray = file.name.split('.');
 
                 if (nameArray.length === 0 || nameArray[nameArray.length - 1] !== 'xlsx') {
-                    createTable(null);
+                    tripsArray = null;
+                    createTable();
                     $error.classList.remove(classHidden);
                     return;
                 }
 
                 reader.readAsBinaryString(file);
             }
+        });
+
+        $transportSelect.addEventListener('change', () => {
+            checkShowFileInput();
         });
 
         $campSelect.addEventListener('change', () => {
@@ -93,16 +102,35 @@ export function loadFile($wrapper) {
         $inputWrapper.addEventListener('click', () => {
             $input.click();
         });
+
+        $sendButton.addEventListener('click', () => {
+            console.log(tripsArray);
+            sendTrips();
+        });
     }
 
     function checkShowFileInput() {
         $error.classList.add(classHidden);
+        let hidden = false;
 
-        if ($typeSelect.value !== defaultValue && $campSelect.value !== defaultValue) {
-            $inputWrapper.classList.remove(classHidden);
-        } else {
+        if ($transportSelect.value === defaultValue) {
+            hidden = true;
+        }
+
+        if ($campSelect.value === defaultValue) {
+            hidden = true;
+        }
+
+        if ($typeSelect.value === defaultValue) {
+            hidden = true;
+        }
+
+        if (hidden) {
             $inputWrapper.classList.add(classHidden);
-            createTable(null);
+            tripsArray = null;
+            createTable();
+        } else {
+            $inputWrapper.classList.remove(classHidden);
         }
     }
 
@@ -118,7 +146,9 @@ export function loadFile($wrapper) {
             workbook.SheetNames.forEach(function (sheetName) {
                 let objectFromXLSX = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-                createTable(createTripsArray(objectFromXLSX));
+                tripsArray = createTripsArray(objectFromXLSX);
+
+                createTable();
             });
         };
 
@@ -179,9 +209,12 @@ export function loadFile($wrapper) {
         return sortTrips;
     }
 
-    function createTable(tripsArray) {
+    function createTable() {
+        $table.innerHTML = '';
+        $tableWrapper.classList.remove(classHidden);
+
         if (!tripsArray) {
-            $table.innerHTML = '';
+            $tableWrapper.classList.add(classHidden);
             return;
         }
 
@@ -214,8 +247,8 @@ export function loadFile($wrapper) {
 
         function createHeader() {
             let $emptyCell = document.createElement('div');
-             $emptyCell.classList.add(classCell);
-             $emptyCell.classList.add(classCellHeader);
+            $emptyCell.classList.add(classCell);
+            $emptyCell.classList.add(classCellHeader);
             let $header = document.createElement('div');
             $header.classList.add(classRow);
             $header.style.gridTemplateColumns = countColStyle;
@@ -268,5 +301,63 @@ export function loadFile($wrapper) {
                 $table.querySelector(`[data-cell-key="${dataSelector}"]`).innerText = trip.price;
             }
         }
+    }
+
+    function sendTrips() {
+        console.log(tripsArray);
+
+        const sendTripsArray = tripsArray.map((trip) => {
+            return {
+                age: trip.age,
+                countDays: trip.countDays,
+                countNights: trip.countNights,
+                price: trip.price,
+                date: +trip.date / 1000
+            };
+        });
+
+        console.log(sendTripsArray);
+
+        const trips = {
+            transportType: $transportSelect.value,
+            camp: $campSelect.value,
+            type: $typeSelect.value,
+            tripsArray
+        };
+
+        const url = '/wp-admin/admin-ajax.php';
+
+        const data = new URLSearchParams();
+        data.append('action', 'ajax_create_trips');
+        data.append('data', JSON.stringify(trips));
+
+        const options = {
+            method: 'POST',
+            headers: {'content-type': 'application/x-www-form-urlencoded'},
+            data: data,
+            url,
+        };
+
+        axios(options).then((response) => {
+            console.log(response.data);
+
+            if (!response.data.success) {
+                console.log(response.data);
+
+                let error = '';
+
+                for (let message of response.data.data) {
+                    error += ` ${message.message} `;
+                }
+
+                alert(error);
+            } else {
+                window.location.reload();
+            }
+        }).catch((error) => {
+            console.error(error);
+            alert(error);
+        });
+
     }
 }

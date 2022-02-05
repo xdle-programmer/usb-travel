@@ -152,4 +152,22 @@
   &__cell-inner {
   }
 
+  &__table-load-button {
+    margin: 30px auto 0;
+    @include flex-row-center;
+    width: 200px;
+    height: 44px;
+    position: relative;
+    background: #fff;
+    z-index: 100;
+    border-radius: 4px;
+    border: 1px solid;
+    border-color: #d5d5d5;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #000;
+    }
+  }
+
 }
