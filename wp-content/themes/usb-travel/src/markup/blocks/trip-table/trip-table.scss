@@ -1,0 +1,43 @@
+@import "~frontend-scss-mixins/mixins";
+@import "../base/mixins";
+@import "../base/variables";
+@import "../base/media-queries";
+
+
+.trip-table {
+
+  &__row {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+
+
+    &--header {
+    }
+  }
+
+  &__cell {
+    border: 1px solid #000;
+    text-align: center;
+    @include flex-row-center;
+
+    &--group {
+      @include flex-column-center;
+    }
+  }
+
+  &__cell-group-name {
+  }
+
+  &__cell-sub-group {
+    @include flex-row-center;
+    border: 1px solid #000;
+    width: 100%;
+  }
+
+  &__cell-sub-group-inner {
+    width: 50%;
+    border: 1px solid #000;
+  }
+
+
+}

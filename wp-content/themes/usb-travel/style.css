@@ -82,5 +82,34 @@ button:focus, input:focus, textarea:focus {
 
 
 
+.trip-table__row {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr); }
+
+.trip-table__cell {
+  border: 1px solid #000;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center; }
+  .trip-table__cell--group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; }
+
+.trip-table__cell-sub-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #000;
+  width: 100%; }
+
+.trip-table__cell-sub-group-inner {
+  width: 50%;
+  border: 1px solid #000; }
+
 
 /*# sourceMappingURL=style.css.map*/

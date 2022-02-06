@@ -324,6 +324,7 @@ function createTripsTable($trips, $options = array())
     function createUniqueColKeys($trips)
     {
         $rawColKeys = [];
+        $rawGroupKeys = [];
 
         foreach ($trips as $trip) {
             $meta = get_post_meta($trip->ID);
@@ -332,28 +333,39 @@ function createTripsTable($trips, $options = array())
             $countNightsKey = 'cn' . $meta['количество_ночей'][0];
             $ageKey = 'age' . $meta['возраст'][0];
             $colKey = $countDaysKey . $countNightsKey . $ageKey;
+            $groupKey = $countDaysKey . $countNightsKey;
+
             $rawColKeys[] = $colKey;
+            $rawGroupKeys[] = $groupKey;
         }
 
         $colKeys = array_unique($rawColKeys);
-        $colKeysArray = array();
+        $groupKeys = array_unique($rawGroupKeys);
 
-        foreach ($colKeys as $colKey) {
-            echo $colKey;
-            $col = array();
-            $col['countDays'] = explode('cn', explode('cd', $colKey)[1])[0];
-            $col['countNights'] = explode('age', explode('cn', $colKey)[1])[0];
-            $col['age'] = explode('age', $colKey)[1];
-            $colKeysArray[] = $col;
+        $groupedArray = array();
+
+        foreach ($groupKeys as $groupKey) {
+            $group = array();
+            $group['ages'] = array();
+            $group['countDays'] = explode('cn', explode('cd', $groupKey)[1])[0];
+            $group['countNights'] = explode('cn', $groupKey)[1];
+
+            foreach ($colKeys as $colKey) {
+                $groupColKey = explode('age', $colKey)[0];
+                $age = explode('age', $colKey)[1];
+
+                if ($groupKey === $groupColKey) {
+                    $group['ages'][] = $age;
+                }
+            }
+
+            $groupedArray[] = $group;
         }
 
-        $colKeysGroupedArray = array();
 
-        foreach ($colKeysGroupedArray as $colKey) {
 
-        }
 
-        return $colKeysArray;
+        return $groupedArray;
     }
 
     $colKeys = createUniqueColKeys($trips);
@@ -361,6 +373,15 @@ function createTripsTable($trips, $options = array())
     function createHeader($colKeys)
     {
         $cellClass = 'trip-table__cell';
+        $cellGroupClass = $cellClass . ' trip-table__cell--group';
+        $cellGroupNameClass = 'trip-table__cell-group-name';
+        $cellGroupAgesClass = 'trip-table__cell-sub-group';
+        $cellGroupAgeClass = 'trip-table__cell-sub-group-inner';
+
+        $ageNames = array(
+            '0' => 'Взрослые',
+            '1' => 'Дети'
+        );
 
         $dateCell = '<div class="' . $cellClass . '">Дата</div class="' . $cellClass . '">';
         $countryCell = '<div class="' . $cellClass . '">Страна</div>';
@@ -377,19 +398,25 @@ function createTripsTable($trips, $options = array())
         echo $transportCell;
 
         foreach ($colKeys as $colKey) {
-            echo '<div class="' . $cellClass . '">' . $colKey . '</div>';
+            echo '<div class="' . $cellGroupClass . '">';
+
+            echo '<div class="' . $cellGroupNameClass . '">' . $colKey['countDays'] . '/' . $colKey['countNights'] . '</div>';
+
+            echo '<div class="' . $cellGroupAgesClass . '">';
+
+            foreach ($colKey['ages'] as $age) {
+                echo '<div class="' . $cellGroupAgeClass . '">' . $ageNames[$age] . '</div>';
+            }
+
+            echo '</div>';
+
+            echo '</div>';
         }
 
         echo '</div>';
     }
 
     createHeader($colKeys);
-
-    echo '<pre>';
-    print_r($colKeys);
-    echo '<br>';
-    echo '</pre>';
-//    Страна	Лагерь	Формат	Трансфер	Дата
 
 
     echo '</div>';
@@ -428,3 +455,19 @@ function createTripsTable($trips, $options = array())
     }
 }
 
+
+function loadFrontScripts()
+{
+    wp_enqueue_script( 'script', get_template_directory_uri(). '/scripts.js' );
+//    wp_register_script('load', themplugins_url('/dist/scripts.js', __FILE__));
+//    wp_enqueue_script('load');
+}
+
+
+function loadFrontStyles()
+{
+    wp_enqueue_style( 'style', get_template_directory_uri(). '/style.css' );
+}
+
+add_action('wp_enqueue_scripts', 'loadFrontStyles');
+add_action('wp_enqueue_scripts', 'loadFrontScripts');

@@ -44,6 +44,13 @@ console.log('index');
   \*********************************************************************/
 
 }();
+// This entry need to be wrapped in an IIFE because it need to be isolated against other entry modules.
+!function() {
+/*!*********************************************************************************!*\
+  !*** ./wp-content/themes/usb-travel/src/markup/blocks/trip-table/trip-table.js ***!
+  \*********************************************************************************/
+console.log('table');
+}();
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
 !function() {
 "use strict";
@@ -135,9 +142,20 @@ __webpack_require__.r(__webpack_exports__);
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
 !function() {
 "use strict";
+var __webpack_exports__ = {};
 /*!***********************************************************************!*\
   !*** ./wp-content/themes/usb-travel/src/markup/blocks/menu/menu.scss ***!
   \***********************************************************************/
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+}();
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+!function() {
+"use strict";
+/*!***********************************************************************************!*\
+  !*** ./wp-content/themes/usb-travel/src/markup/blocks/trip-table/trip-table.scss ***!
+  \***********************************************************************************/
 __webpack_require__.r(__webpack_exports__);
 // extracted by mini-css-extract-plugin
 
