@@ -304,11 +304,11 @@ function getTrips($options = array())
 {
     $args = array(
         'post_type' => 'trip',
-        'numberposts' => -1,
-        'meta_query' => array(array(
-            'key' => 'лагерь',
-            'value' => '314',
-        )),
+        'numberposts' => 1,
+//        'meta_query' => array(array(
+//            'key' => 'лагерь',
+//            'value' => '314',
+//        )),
     );
 
     $trips = get_posts($args);
@@ -321,10 +321,48 @@ function createTripsTable($trips, $options = array())
 
     echo '<div class="trip-table">';
 
-    function createUniqueColKeys($trips)
+    function array_sort($array, $on, $order = SORT_ASC)
+    {
+        $new_array = array();
+        $sortable_array = array();
+
+        if (count($array) > 0) {
+            foreach ($array as $k => $v) {
+
+                if (is_array($v)) {
+                    foreach ($v as $k2 => $v2) {
+                        if ($k2 == $on) {
+                            $sortable_array[$k] = $v2;
+                        }
+                    }
+                } else {
+                    $sortable_array[$k] = $v;
+                }
+            }
+
+
+            switch ($order) {
+                case SORT_ASC:
+                    asort($sortable_array);
+                    break;
+                case SORT_DESC:
+                    arsort($sortable_array);
+                    break;
+            }
+
+            foreach ($sortable_array as $k => $v) {
+                $new_array[$k] = $array[$k];
+            }
+        }
+
+        return $new_array;
+    }
+
+    function createUniqueAndGroupTripsColKeys($trips)
     {
         $rawColKeys = [];
         $rawGroupKeys = [];
+        $groupedTrips = array();
 
         foreach ($trips as $trip) {
             $meta = get_post_meta($trip->ID);
@@ -334,6 +372,25 @@ function createTripsTable($trips, $options = array())
             $ageKey = 'age' . $meta['возраст'][0];
             $colKey = $countDaysKey . $countNightsKey . $ageKey;
             $groupKey = $countDaysKey . $countNightsKey;
+
+            $date = (new \DateTime($meta['дата_поездки'][0]))->getTimestamp();
+
+            $campKey = 'cm' . $meta['лагерь'][0];
+            $typeKey = 't' . $meta['тип_поездки'][0];
+            $transferKey = 'tr' . $meta['тип_транспорта'][0];
+
+            $keyToGroupsArray = $date . $campKey . $typeKey . $transferKey;
+
+            $tripToRender = array(
+                'post' => $trip,
+                'meta' => $meta,
+            );
+
+            $groupedTrips[$keyToGroupsArray]['date'] = $date;
+            $groupedTrips[$keyToGroupsArray]['camp'] = $meta['лагерь'][0];
+            $groupedTrips[$keyToGroupsArray]['type'] = $meta['тип_поездки'][0];
+            $groupedTrips[$keyToGroupsArray]['transfer'] = $meta['тип_транспорта'][0];
+            $groupedTrips[$keyToGroupsArray][] = $tripToRender;
 
             $rawColKeys[] = $colKey;
             $rawGroupKeys[] = $groupKey;
@@ -355,20 +412,38 @@ function createTripsTable($trips, $options = array())
                 $age = explode('age', $colKey)[1];
 
                 if ($groupKey === $groupColKey) {
-                    $group['ages'][] = $age;
+                    $group['ages'][$age] = $age;
                 }
             }
 
             $groupedArray[] = $group;
         }
 
+        $groupedArraySort = array_sort($groupedArray, 'countDays', SORT_ASC);
 
+        $dateCol = array_column($groupedTrips, 'date');
+        $campCol = array_column($groupedTrips, 'camp');
+        $typeCol = array_column($groupedTrips, 'type');
+        $transferCol = array_column($groupedTrips, 'transfer');
 
+        array_multisort(
+            $dateCol, SORT_DESC,
+            $campCol, SORT_DESC,
+            $typeCol, SORT_DESC,
+            $transferCol, SORT_DESC,
+            $groupedTrips
+        );
 
-        return $groupedArray;
+        $result = array();
+
+        $result['colKeys'] = $groupedArraySort;
+        $result['groupedTrips'] = $groupedTrips;
+
+        return $result;
     }
 
-    $colKeys = createUniqueColKeys($trips);
+    $colKeys = createUniqueAndGroupTripsColKeys($trips)['colKeys'];
+    $groupedTrips = createUniqueAndGroupTripsColKeys($trips)['groupedTrips'];
 
     function createHeader($colKeys)
     {
@@ -404,8 +479,12 @@ function createTripsTable($trips, $options = array())
 
             echo '<div class="' . $cellGroupAgesClass . '">';
 
-            foreach ($colKey['ages'] as $age) {
-                echo '<div class="' . $cellGroupAgeClass . '">' . $ageNames[$age] . '</div>';
+            if (isset($colKey['ages'][1])) {
+                echo '<div class="' . $cellGroupAgeClass . '">' . $ageNames[$colKey['ages'][1]] . '</div>';
+            }
+
+            if (isset($colKey['ages'][0])) {
+                echo '<div class="' . $cellGroupAgeClass . '">' . $ageNames[$colKey['ages'][0]] . '</div>';
             }
 
             echo '</div>';
@@ -418,47 +497,55 @@ function createTripsTable($trips, $options = array())
 
     createHeader($colKeys);
 
+    $cellClass = 'trip-table__cell';
 
-    echo '</div>';
-    return;
-
-    foreach ($trips as $trip) {
-
-        echo '<pre>';
-//        print_r($trip);
-        echo _e('Good morning', 'usb-travel');
-        echo '<br>';
-        echo $trip->ID;
+    echo '<pre>';
+    print_r($colKeys);
+    echo '</pre>';
 
 
-        echo '</pre>';
+    foreach ($groupedTrips as $key => $val) {
 
-        echo '<br>';
-        echo the_field('лагерь', $trip->ID);
-        echo '<br>';
-        echo '<br>';
-//        echo the_field('тип_транспорта', $trip->ID);
-//        echo '<br>';
-//        echo the_field('тип_поездки', $trip->ID);
-//        echo '<br>';
-//        echo the_field('количество_дней', $trip->ID);
-//        echo '<br>';
-//        echo the_field('количество_ночей', $trip->ID);
-//        echo '<br>';
-//        echo the_field('цена_в_евро', $trip->ID);
-//        echo '<br>';
-//        echo the_field('дата_поездки', $trip->ID);
-//        echo '<br>';
-//        echo '<br>';
-//        echo '<br>';
+        $dateCell = '<div class="' . $cellClass . '">' . date("d.m.Y", $groupedTrips[$key]['date']) . '</div>';
+        $countryCell = '<div class="' . $cellClass . '">' . $groupedTrips[$key]['camp'] . '</div>';
+        $campCell = '<div class="' . $cellClass . '">' . $groupedTrips[$key]['camp'] . '</div>';
+        $typeCell = '<div class="' . $cellClass . '">' . $groupedTrips[$key]['type'] . '</div>';
+        $transportCell = '<div class="' . $cellClass . '">' . $groupedTrips[$key]['transfer'] . '</div>';
 
+        echo '<div class="trip-table__row">';
+
+        echo $dateCell;
+        echo $countryCell;
+        echo $campCell;
+        echo $typeCell;
+        echo $transportCell;
+
+        echo '</div>';
+
+//
+//        echo '<pre>';
+//
+//        echo date("d.m.Y", $groupedTrips[$key]['date']) . '   ' . $groupedTrips[$key]['camp'] . '   ' . $groupedTrips[$key]['type'] . '   ' . $groupedTrips[$key]['transfer'];
+//
+////        print_r($groupedTrips[$key]['date']);
+////        print_r($key);
+//        echo '<br>';
+//////        print_r($groupedTrips[$key]);
+//////        echo _e('Good morning', 'usb-travel');
+//////        print_r($groupTrips);
+////        echo '<br>';
+//////        echo $trip->ID;
+////
+//        echo '</pre>';
+//
+//        echo '<br>';
     }
 }
 
 
 function loadFrontScripts()
 {
-    wp_enqueue_script( 'script', get_template_directory_uri(). '/scripts.js' );
+    wp_enqueue_script('script', get_template_directory_uri() . '/scripts.js');
 //    wp_register_script('load', themplugins_url('/dist/scripts.js', __FILE__));
 //    wp_enqueue_script('load');
 }
@@ -466,7 +553,7 @@ function loadFrontScripts()
 
 function loadFrontStyles()
 {
-    wp_enqueue_style( 'style', get_template_directory_uri(). '/style.css' );
+    wp_enqueue_style('style', get_template_directory_uri() . '/style.css');
 }
 
 add_action('wp_enqueue_scripts', 'loadFrontStyles');
