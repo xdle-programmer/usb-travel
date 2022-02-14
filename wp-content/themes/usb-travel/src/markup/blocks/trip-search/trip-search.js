@@ -30,6 +30,7 @@ export function tripSearch($wrapper) {
     let camps = [];
     let types = [];
     let transfer = [];
+    let countNights = [];
 
     init();
 
@@ -64,7 +65,7 @@ export function tripSearch($wrapper) {
         selectCountNights = new createSelect({
             $select: $selectCountNights,
             placeholder: window.stringTranslation.selectCountNightsPlaceholder,
-            values: transfer
+            values: countNights
         });
 
         addListener();
@@ -104,6 +105,14 @@ export function tripSearch($wrapper) {
 
             transfer.push({
                 name: window.searchOptions.transportType[key][0],
+                value: key
+            });
+        }
+
+        for (let key in window.searchOptions.countNights) {
+
+            countNights.push({
+                name: window.searchOptions.countNights[key][0],
                 value: key
             });
         }

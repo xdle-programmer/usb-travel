@@ -442,6 +442,39 @@ function getTransportType()
 
 }
 
+//Функция получения количества ночей
+function getCountNumbers()
+{
+    //Получаем все лагеря
+    $args = array(
+        'post_type' => 'trip',
+        'numberposts' => -1,
+    );
+
+    $camps = get_posts($args);
+
+    // Собираем ID лагерей
+    $links = [];
+    foreach ($camps as $camp) {
+        $meta = get_post_meta($camp->ID);
+        $countNights = $meta['количество_ночей'][0];
+        $links[] = $countNights;
+    }
+
+    //Формируем массив русских ID и тайтлов
+    $linksUnique = array_unique($links);
+    $campsUnique = [];
+
+    foreach ($linksUnique as $link) {
+        $campsUnique[$link] = [
+            $link,
+        ];
+    }
+
+    return $campsUnique;
+
+}
+
 //Функция вывода поездок
 function createTripsTable($trips, $options = array())
 {
@@ -701,19 +734,6 @@ function createTripsTable($trips, $options = array())
     }
 }
 
-//Функция создания селекта
-function createSelect($options)
-{
-    echo '<select class="custom-select" ' . $options['data'] . '>';
-    echo '<option value="default">Выберите</option>';
-    echo '<option value="1" id="zzz">Тест 1</option>';
-    echo '<option value="2">Тест 2</option>';
-    echo '<option value="3">Тест 3</option>';
-    echo '<option value="4">Тест 4</option>';
-    echo '<option value="5">Тест 5</option>';
-    echo '</select>';
-}
-
 //Функция всех опций для поиска
 function createSearchOptions()
 {
@@ -722,76 +742,17 @@ function createSearchOptions()
     $campsAndCountries = getCampsAndCountries();
     $groupsType = getGroupsType();
     $transportType = getTransportType();
+    $countNights = getCountNumbers();
 
     $options = array(
         'countries' => $countries,
         'camps' => $campsAndCountries,
         'groupsType' => $groupsType,
         'transportType' => $transportType,
+        'countNights' => $countNights,
     );
 
     return $options;
-
-}
-
-//Функция вывода поискового блока
-function createSearch($options)
-{
-    $class = 'trip-search';
-    $dataAttr = 'data-trip-search';
-
-
-//    const $selectCountry = $wrapper.querySelector(`[${dataPrefix}-select-country]`)
-//    const $selectCamp = $wrapper.querySelector(`[${dataPrefix}-select-camp]`)
-//    const $selectType = $wrapper.querySelector(`[${dataPrefix}-select-type]`)
-//    const $selectTransfer = $wrapper.querySelector(`[${dataPrefix}-select-transfer]`)
-//    const $selectCountNights = $wrapper.querySelector(`[${dataPrefix}-select-count-nights]`)
-
-
-    echo '<div class="' . $class . '">';
-
-    // Селект страны
-    echo '<div class="' . $class . '__item">';
-
-    $selectCountryOptions = array(
-        'data' => $dataAttr . '-select-country'
-    );
-
-    createSelect($selectCountryOptions);
-    echo '</div>';
-
-    // Селект лагеря
-    echo '<div class="' . $class . '__item">';
-//    createSelect('test');
-    echo '</div>';
-
-    // Селект группы
-    echo '<div class="' . $class . '__item">';
-//    createSelect('test');
-    echo '</div>';
-
-    // Селект транспорта
-    echo '<div class="' . $class . '__item">';
-//    createSelect('test');
-    echo '</div>';
-
-    // Инпут даты выезда
-    echo '<div class="' . $class . '__item">';
-    echo 'Инпут даты выезда';
-    echo '</div>';
-
-    // Селект количества ночей
-    echo '<div class="' . $class . '__item">';
-//    createSelect('test');
-    echo '</div>';
-
-    // Селект количества ночей
-    echo '<div class="' . $class . '__item">';
-    echo '<div id="test-button">Тест баттон</div>';
-    echo '</div>';
-
-
-    echo '</div>';
 
 }
 

@@ -1,0 +1,74 @@
+@import "~frontend-scss-mixins/mixins";
+@import "../base/mixins";
+@import "../base/variables";
+@import "../base/media-queries";
+
+.placeholder {
+    position: relative;
+    display: block;
+
+    $not-empty: '.placeholder--not-empty';
+    $error: '.form-check__error--show';
+    $error-focus: '.form-check__error--show.form-check__field--focus';
+    $auth: '.placeholder--auth';
+    $textarea: '.placeholder--textarea';
+
+
+    &__item {
+        color: var(--natural-color);
+        cursor: text;
+        font-size: 20px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 12px;
+        padding-left: 0;
+        height: auto;
+        transition: transform 0.2s, opacity 0s;
+        transform-origin: left bottom;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+
+        #{$not-empty} & {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-20px);
+            font-size: 13px;
+        }
+
+        #{$textarea} & {
+            top: 26px;
+        }
+
+        #{$auth} & {
+            left: 20px;
+        }
+
+        #{$auth}#{$not-empty} & {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-130%)
+        }
+
+        #{$error}#{$not-empty} &,
+        #{$error} & {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        #{$error-focus}#{$not-empty} & {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-20px)
+        }
+
+        #{$auth}#{$error-focus}#{$not-empty} & {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-130%)
+        }
+
+    }
+
+}

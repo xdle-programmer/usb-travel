@@ -51,6 +51,8 @@
         "glightbox": "^3.0.9",
         "image-capture": "^0.4.0",
         "imask": "^6.1.0",
+        "axios": "^0.25.0",
+        "moment": "^2.29.1",
         "imports-loader": "^3.0.0",
         "modals-toggle": "^1.0.1",
         "nouislider": "^15.2.0",
