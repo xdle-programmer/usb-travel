@@ -304,7 +304,7 @@ function getTrips($options = array())
 {
     $args = array(
         'post_type' => 'trip',
-        'numberposts' => 1,
+        'numberposts' => 100,
 //        'meta_query' => array(array(
 //            'key' => 'лагерь',
 //            'value' => '314',
@@ -315,9 +315,140 @@ function getTrips($options = array())
     return $trips;
 }
 
+//Функция получения стран
+function getCountries()
+{
+    //Получаем все лагеря
+    $args = array(
+        'post_type' => 'country',
+        'numberposts' => -1,
+    );
+
+    $camps = get_posts($args);
+
+    // Собираем ID лагерей
+    $links = [];
+    foreach ($camps as $camp) {
+        $link = apply_filters('wpml_object_id', $camp->ID, 'post', TRUE, 'ru');
+        $links[] = $link;
+    }
+
+    //Формируем массив русских ID и тайтлов
+    $linksUnique = array_unique($links);
+    $campsUnique = [];
+
+    foreach ($linksUnique as $link) {
+        $campsUnique[$link] = [
+            get_the_title(apply_filters('wpml_object_id', $link, 'post', TRUE, ICL_LANGUAGE_CODE)),
+        ];
+    }
+
+    return $campsUnique;
+}
+
+//Функция получения стран и лагерей
+function getCampsAndCountries()
+{
+    //Получаем все лагеря
+    $args = array(
+        'post_type' => 'camp',
+        'numberposts' => -1,
+    );
+
+    $camps = get_posts($args);
+
+    // Собираем ID лагерей
+    $links = [];
+    foreach ($camps as $camp) {
+        $link = apply_filters('wpml_object_id', $camp->ID, 'post', TRUE, 'ru');
+        $links[] = $link;
+    }
+
+    //Формируем массив русских ID и тайтлов
+    $linksUnique = array_unique($links);
+    $campsUnique = [];
+
+    foreach ($linksUnique as $link) {
+        $campsUnique[$link] = [
+            get_the_title(apply_filters('wpml_object_id', $link, 'post', TRUE, ICL_LANGUAGE_CODE)),
+            get_the_title(apply_filters('wpml_object_id', get_field('страна', $link), 'post', TRUE, ICL_LANGUAGE_CODE))
+        ];
+    }
+
+    return $campsUnique;
+}
+
+//Функция получения типов групп
+function getGroupsType()
+{
+    //Получаем все лагеря
+    $args = array(
+        'post_type' => 'trip-type',
+        'numberposts' => -1,
+    );
+
+    $camps = get_posts($args);
+
+    // Собираем ID лагерей
+    $links = [];
+    foreach ($camps as $camp) {
+        $link = apply_filters('wpml_object_id', $camp->ID, 'post', TRUE, 'ru');
+        $links[] = $link;
+    }
+
+    //Формируем массив русских ID и тайтлов
+    $linksUnique = array_unique($links);
+    $campsUnique = [];
+
+    foreach ($linksUnique as $link) {
+        $campsUnique[$link] = [
+            get_the_title(apply_filters('wpml_object_id', $link, 'post', TRUE, ICL_LANGUAGE_CODE)),
+        ];
+    }
+
+    return $campsUnique;
+
+}
+
+//Функция получения типов транспорта
+function getTransportType()
+{
+    //Получаем все лагеря
+    $args = array(
+        'post_type' => 'transport_type',
+        'numberposts' => -1,
+    );
+
+    $camps = get_posts($args);
+
+    // Собираем ID лагерей
+    $links = [];
+    foreach ($camps as $camp) {
+        $link = apply_filters('wpml_object_id', $camp->ID, 'post', TRUE, 'ru');
+        $links[] = $link;
+    }
+
+    //Формируем массив русских ID и тайтлов
+    $linksUnique = array_unique($links);
+    $campsUnique = [];
+
+    foreach ($linksUnique as $link) {
+        $campsUnique[$link] = [
+            get_the_title(apply_filters('wpml_object_id', $link, 'post', TRUE, ICL_LANGUAGE_CODE)),
+        ];
+    }
+
+    return $campsUnique;
+
+}
+
 //Функция вывода поездок
 function createTripsTable($trips, $options = array())
 {
+
+    $campsAndCountries = getCampsAndCountries();
+    $groupsType = getGroupsType();
+    $transportType = getTransportType();
 
     echo '<div class="trip-table">';
 
@@ -381,10 +512,11 @@ function createTripsTable($trips, $options = array())
 
             $keyToGroupsArray = $date . $campKey . $typeKey . $transferKey;
 
-            $tripToRender = array(
-                'post' => $trip,
-                'meta' => $meta,
-            );
+            $tripToRender = [];
+            $tripToRender[] = $meta['количество_дней'][0];
+            $tripToRender[] = $meta['количество_ночей'][0];
+            $tripToRender[] = $meta['возраст'][0];
+            $tripToRender[] = $meta['цена_в_евро'][0];
 
             $groupedTrips[$keyToGroupsArray]['date'] = $date;
             $groupedTrips[$keyToGroupsArray]['camp'] = $meta['лагерь'][0];
@@ -499,18 +631,13 @@ function createTripsTable($trips, $options = array())
 
     $cellClass = 'trip-table__cell';
 
-    echo '<pre>';
-    print_r($colKeys);
-    echo '</pre>';
-
-
     foreach ($groupedTrips as $key => $val) {
 
         $dateCell = '<div class="' . $cellClass . '">' . date("d.m.Y", $groupedTrips[$key]['date']) . '</div>';
-        $countryCell = '<div class="' . $cellClass . '">' . $groupedTrips[$key]['camp'] . '</div>';
-        $campCell = '<div class="' . $cellClass . '">' . $groupedTrips[$key]['camp'] . '</div>';
-        $typeCell = '<div class="' . $cellClass . '">' . $groupedTrips[$key]['type'] . '</div>';
-        $transportCell = '<div class="' . $cellClass . '">' . $groupedTrips[$key]['transfer'] . '</div>';
+        $countryCell = '<div class="' . $cellClass . '">' . $campsAndCountries[$groupedTrips[$key]['camp']][1] . '</div>';
+        $campCell = '<div class="' . $cellClass . '">' . $campsAndCountries[$groupedTrips[$key]['camp']][0] . '</div>';
+        $typeCell = '<div class="' . $cellClass . '">' . $groupsType[$groupedTrips[$key]['type']][0] . '</div>';
+        $transportCell = '<div class="' . $cellClass . '">' . $transportType[$groupedTrips[$key]['transfer']][0] . '</div>';
 
         echo '<div class="trip-table__row">';
 
@@ -520,36 +647,160 @@ function createTripsTable($trips, $options = array())
         echo $typeCell;
         echo $transportCell;
 
-        echo '</div>';
+        foreach ($colKeys as $colKey) {
 
-//
-//        echo '<pre>';
-//
-//        echo date("d.m.Y", $groupedTrips[$key]['date']) . '   ' . $groupedTrips[$key]['camp'] . '   ' . $groupedTrips[$key]['type'] . '   ' . $groupedTrips[$key]['transfer'];
-//
-////        print_r($groupedTrips[$key]['date']);
-////        print_r($key);
-//        echo '<br>';
-//////        print_r($groupedTrips[$key]);
-//////        echo _e('Good morning', 'usb-travel');
-//////        print_r($groupTrips);
-////        echo '<br>';
-//////        echo $trip->ID;
-////
-//        echo '</pre>';
-//
-//        echo '<br>';
+            $colCountDays = $colKey['countDays'];
+            $colCountNights = $colKey['countNights'];
+
+            $cellTrip1 = false;
+            $cellTrip0 = false;
+
+            echo '<div class="trip-table__cell trip-table__cell--group">';
+            echo '<div class="trip-table__cell-sub-group">';
+
+            foreach ($groupedTrips[$key] as $trip) {
+
+                if (isset($colKey['ages'][1])) {
+                    $colAge = 1;
+
+                    if ($colAge == $trip[2] && $colCountDays == $trip[0] && $colCountNights == $trip[1]) {
+                        $cellTrip1 = '<div class="trip-table__cell-sub-group-inner">' . $trip[3] . '</div>';
+                    }
+                }
+
+                if (isset($colKey['ages'][0])) {
+                    $colAge = 0;
+
+                    if ($colAge == $trip[2] && $colCountDays == $trip[0] && $colCountNights == $trip[1]) {
+                        $cellTrip0 = '<div class="trip-table__cell-sub-group-inner">' . $trip[3] . '</div>';
+                    }
+                }
+            }
+
+            if (isset($colKey['ages'][1])) {
+                if ($cellTrip1) {
+                    echo $cellTrip1;
+                } else {
+                    echo '<div class="trip-table__cell-sub-group-inner">-</div>';
+                }
+            }
+
+            if (isset($colKey['ages'][0])) {
+                if ($cellTrip0) {
+                    echo $cellTrip0;
+                } else {
+                    echo '<div class="trip-table__cell-sub-group-inner">-</div>';
+                }
+            }
+
+            echo '</div>';
+            echo '</div>';
+        }
+
+        echo '</div>';
     }
 }
 
+//Функция создания селекта
+function createSelect($options)
+{
+    echo '<select class="custom-select" ' . $options['data'] . '>';
+    echo '<option value="default">Выберите</option>';
+    echo '<option value="1" id="zzz">Тест 1</option>';
+    echo '<option value="2">Тест 2</option>';
+    echo '<option value="3">Тест 3</option>';
+    echo '<option value="4">Тест 4</option>';
+    echo '<option value="5">Тест 5</option>';
+    echo '</select>';
+}
+
+//Функция всех опций для поиска
+function createSearchOptions()
+{
+
+    $countries = getCountries();
+    $campsAndCountries = getCampsAndCountries();
+    $groupsType = getGroupsType();
+    $transportType = getTransportType();
+
+    $options = array(
+        'countries' => $countries,
+        'camps' => $campsAndCountries,
+        'groupsType' => $groupsType,
+        'transportType' => $transportType,
+    );
+
+    return $options;
+
+}
+
+//Функция вывода поискового блока
+function createSearch($options)
+{
+    $class = 'trip-search';
+    $dataAttr = 'data-trip-search';
+
+
+//    const $selectCountry = $wrapper.querySelector(`[${dataPrefix}-select-country]`)
+//    const $selectCamp = $wrapper.querySelector(`[${dataPrefix}-select-camp]`)
+//    const $selectType = $wrapper.querySelector(`[${dataPrefix}-select-type]`)
+//    const $selectTransfer = $wrapper.querySelector(`[${dataPrefix}-select-transfer]`)
+//    const $selectCountNights = $wrapper.querySelector(`[${dataPrefix}-select-count-nights]`)
+
+
+    echo '<div class="' . $class . '">';
+
+    // Селект страны
+    echo '<div class="' . $class . '__item">';
+
+    $selectCountryOptions = array(
+        'data' => $dataAttr . '-select-country'
+    );
+
+    createSelect($selectCountryOptions);
+    echo '</div>';
+
+    // Селект лагеря
+    echo '<div class="' . $class . '__item">';
+//    createSelect('test');
+    echo '</div>';
+
+    // Селект группы
+    echo '<div class="' . $class . '__item">';
+//    createSelect('test');
+    echo '</div>';
+
+    // Селект транспорта
+    echo '<div class="' . $class . '__item">';
+//    createSelect('test');
+    echo '</div>';
+
+    // Инпут даты выезда
+    echo '<div class="' . $class . '__item">';
+    echo 'Инпут даты выезда';
+    echo '</div>';
+
+    // Селект количества ночей
+    echo '<div class="' . $class . '__item">';
+//    createSelect('test');
+    echo '</div>';
+
+    // Селект количества ночей
+    echo '<div class="' . $class . '__item">';
+    echo '<div id="test-button">Тест баттон</div>';
+    echo '</div>';
+
+
+    echo '</div>';
+
+}
 
 function loadFrontScripts()
 {
-    wp_enqueue_script('script', get_template_directory_uri() . '/scripts.js');
+    wp_enqueue_script('script', get_template_directory_uri() . '/scripts.js', null, null, true);
 //    wp_register_script('load', themplugins_url('/dist/scripts.js', __FILE__));
 //    wp_enqueue_script('load');
 }
-
 
 function loadFrontStyles()
 {

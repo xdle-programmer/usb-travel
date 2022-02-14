@@ -3,7 +3,15 @@
 @import "../base/variables";
 @import "../base/media-queries";
 
-.layout {
-  width: 1200px;
-  @include margin-auto;
+
+.trip-search {
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 15px;
+
+
+  &__item {
+
+  }
 }
