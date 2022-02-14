@@ -304,7 +304,7 @@ function getTrips($options = array())
 {
     $args = array(
         'post_type' => 'trip',
-        'numberposts' => 100,
+        'numberposts' => -1,
 //        'meta_query' => array(array(
 //            'key' => 'лагерь',
 //            'value' => '314',

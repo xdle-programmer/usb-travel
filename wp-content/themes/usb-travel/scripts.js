@@ -30267,7 +30267,7 @@ function tripSearch($wrapper) {
     selectTransfer = new _custom_select_custom_select__WEBPACK_IMPORTED_MODULE_0__.createSelect({
       $select: $selectTransfer,
       placeholder: window.stringTranslation.selectTransferPlaceholder,
-      values: countries
+      values: transfer
     });
     selectCountNights = new _custom_select_custom_select__WEBPACK_IMPORTED_MODULE_0__.createSelect({
       $select: $selectCountNights,

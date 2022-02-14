@@ -59,7 +59,7 @@ export function tripSearch($wrapper) {
         selectTransfer = new createSelect({
             $select: $selectTransfer,
             placeholder: window.stringTranslation.selectTransferPlaceholder,
-            values: countries
+            values: transfer
         });
 
         selectCountNights = new createSelect({

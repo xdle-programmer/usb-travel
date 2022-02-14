@@ -29,7 +29,10 @@ $trips = getTrips();
 ?>
 
     <div class="layout">
-        <h1>Страница поиска</h1>
+        <br>
+        <br>
+        <br>
+        <br>
     </div>
 
     <div class="layout">
@@ -37,7 +40,10 @@ $trips = getTrips();
     </div>
 
     <div class="layout">
-<!--        --><?php //createSearch($options); ?>
+        <br>
+        <br>
+        <br>
+        <br>
     </div>
 
     <div class="layout">
