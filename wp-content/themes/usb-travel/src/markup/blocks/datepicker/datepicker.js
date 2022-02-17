@@ -7,6 +7,8 @@ let datePresets = {
         .subtract(18, 'year')),
     minus100y: formatDate(moment(new Date())
         .subtract(100, 'year')),
+    minus1y: formatDate(moment(new Date())
+        .subtract(1, 'year')),
     plus30y: formatDate(moment(new Date())
         .add(30, 'year')),
     tomorrow: formatDate(moment(new Date())
@@ -40,14 +42,14 @@ export function initDatepicker($datepicker) {
     if ($datepicker.dataset.datepickerMinDate) {
         options.minDate = datePresets[$datepicker.dataset.datepickerMinDate];
     } else {
-        options.minDate = datePresets['minus100y'];
+        options.minDate = datePresets['plus1y'];
     }
 
     if ($datepicker.dataset.datepickerMaxDate) {
         options.maxDate = datePresets[$datepicker.dataset.datepickerMaxDate];
     } else {
         options.maxDate = formatDate(moment(new Date())
-            .subtract(2, 'month'));
+            .subtract(1, 'year'));
     }
 
     if ($datepicker.dataset.datepickerStartView === 'year') {

@@ -11,9 +11,7 @@
 
 ?>
 
-	<footer class="footer">
-		Футер
-	</footer>
+	<footer class="footer"></footer>
 
 </div><!-- #page -->
 

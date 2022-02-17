@@ -20,15 +20,18 @@
         <div class="placeholder">
             <input class="input placeholder__input input-mask" data-mask="00.00.0000" placeholder="<?= _e('Select date', 'usb-travel'); ?>"
                    data-datepicker-input
+                   data-trip-search-date
             >
             <div class="placeholder__item"><?= _e('Select date', 'usb-travel'); ?></div>
         </div>
     </div>
 
-    <div class="trip-search__item"></div>
-    <button class="trip-search__button">
+    <div class="trip-search__button" data-trip-search-button>
         <?= _e('Search', 'usb-travel'); ?>
-    </button>
+    </div>
 
+    <div class="trip-search__button" data-trip-search-clear>
+        <?= _e('Clear search', 'usb-travel'); ?>
+    </div>
 
 </div>

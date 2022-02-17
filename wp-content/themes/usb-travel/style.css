@@ -561,6 +561,12 @@ button:focus, input:focus, textarea:focus {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 15px; }
+  .trip-search__button {
+    grid-column-start: 1;
+    grid-column-end: 4;
+    background: #fff200;
+    cursor: pointer;
+    padding: 15px; }
 
 .trip-table__row {
   display: grid;

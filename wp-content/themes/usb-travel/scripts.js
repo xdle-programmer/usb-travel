@@ -30020,6 +30020,7 @@ let datePresets = {
   today: (0,_index__WEBPACK_IMPORTED_MODULE_0__.formatDate)(new Date()),
   minus18y: (0,_index__WEBPACK_IMPORTED_MODULE_0__.formatDate)((0,_index__WEBPACK_IMPORTED_MODULE_0__.moment)(new Date()).subtract(18, 'year')),
   minus100y: (0,_index__WEBPACK_IMPORTED_MODULE_0__.formatDate)((0,_index__WEBPACK_IMPORTED_MODULE_0__.moment)(new Date()).subtract(100, 'year')),
+  minus1y: (0,_index__WEBPACK_IMPORTED_MODULE_0__.formatDate)((0,_index__WEBPACK_IMPORTED_MODULE_0__.moment)(new Date()).subtract(1, 'year')),
   plus30y: (0,_index__WEBPACK_IMPORTED_MODULE_0__.formatDate)((0,_index__WEBPACK_IMPORTED_MODULE_0__.moment)(new Date()).add(30, 'year')),
   tomorrow: (0,_index__WEBPACK_IMPORTED_MODULE_0__.formatDate)((0,_index__WEBPACK_IMPORTED_MODULE_0__.moment)(new Date()).add(1, 'day')),
   plus2m: (0,_index__WEBPACK_IMPORTED_MODULE_0__.formatDate)((0,_index__WEBPACK_IMPORTED_MODULE_0__.moment)(new Date()).add(2, 'month')),
@@ -30045,13 +30046,13 @@ function initDatepicker($datepicker) {
   if ($datepicker.dataset.datepickerMinDate) {
     options.minDate = datePresets[$datepicker.dataset.datepickerMinDate];
   } else {
-    options.minDate = datePresets['minus100y'];
+    options.minDate = datePresets['plus1y'];
   }
 
   if ($datepicker.dataset.datepickerMaxDate) {
     options.maxDate = datePresets[$datepicker.dataset.datepickerMaxDate];
   } else {
-    options.maxDate = (0,_index__WEBPACK_IMPORTED_MODULE_0__.formatDate)((0,_index__WEBPACK_IMPORTED_MODULE_0__.moment)(new Date()).subtract(2, 'month'));
+    options.maxDate = (0,_index__WEBPACK_IMPORTED_MODULE_0__.formatDate)((0,_index__WEBPACK_IMPORTED_MODULE_0__.moment)(new Date()).subtract(1, 'year'));
   }
 
   if ($datepicker.dataset.datepickerStartView === 'year') {
@@ -30218,6 +30219,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "tripSearch": function() { return /* binding */ tripSearch; }
 /* harmony export */ });
 /* harmony import */ var _custom_select_custom_select__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../custom-select/custom-select */ "./wp-content/themes/usb-travel/src/markup/blocks/custom-select/custom-select.js");
+/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../index */ "./wp-content/themes/usb-travel/src/index.js");
+
 
 const $tripSearch = document.querySelector('.trip-search');
 
@@ -30230,11 +30233,15 @@ function tripSearch($wrapper) {
   console.log(window.searchOptions);
   const classPrefix = 'trip-search';
   const dataPrefix = 'data-trip-search';
+  const defaultValue = 'default';
   const $selectCountry = $wrapper.querySelector(`[${dataPrefix}-select-country]`);
   const $selectCamp = $wrapper.querySelector(`[${dataPrefix}-select-camp]`);
   const $selectType = $wrapper.querySelector(`[${dataPrefix}-select-type]`);
   const $selectTransfer = $wrapper.querySelector(`[${dataPrefix}-select-transfer]`);
   const $selectCountNights = $wrapper.querySelector(`[${dataPrefix}-select-count-nights]`);
+  const $inputDate = $wrapper.querySelector(`[${dataPrefix}-date]`);
+  const $searchButton = $wrapper.querySelector(`[${dataPrefix}-button]`);
+  const $clearButton = $wrapper.querySelector(`[${dataPrefix}-clear]`);
   let selectCountry;
   let selectCamp;
   let selectType;
@@ -30275,9 +30282,104 @@ function tripSearch($wrapper) {
       values: countNights
     });
     addListener();
+    setInitInputs();
   }
 
-  function addListener() {}
+  function addListener() {
+    $selectCountry.addEventListener('change', () => {
+      if ($selectCountry.value === defaultValue || $selectCamp.value === defaultValue) {
+        return;
+      }
+
+      const campCountry = window.searchOptions.camps[$selectCamp.value][2];
+
+      if (+$selectCountry.value !== +campCountry) {
+        $selectCamp.value = defaultValue;
+        $selectCamp.dispatchEvent(new Event('change'));
+      }
+    });
+    $selectCamp.addEventListener('change', () => {
+      if ($selectCountry.value === defaultValue || $selectCamp.value === defaultValue) {
+        return;
+      }
+
+      const campCountry = window.searchOptions.camps[$selectCamp.value][2];
+
+      if (+$selectCountry.value !== +campCountry) {
+        $selectCountry.value = defaultValue;
+        $selectCountry.dispatchEvent(new Event('change'));
+      }
+    });
+    $searchButton.addEventListener('click', () => {
+      const params = [];
+
+      if ($selectCountry.value !== defaultValue) {
+        params.push(`search_country=${$selectCountry.value}`);
+      }
+
+      if ($selectCamp.value !== defaultValue) {
+        params.push(`search_camp=${$selectCamp.value}`);
+      }
+
+      if ($selectType.value !== defaultValue) {
+        params.push(`number_people=${$selectType.value}`);
+      }
+
+      if ($selectTransfer.value !== defaultValue) {
+        params.push(`transfer=${$selectTransfer.value}`);
+      }
+
+      if ($selectCountNights.value !== defaultValue) {
+        params.push(`count_nights=${$selectCountNights.value}`);
+      }
+
+      if ($inputDate.value !== '') {
+        params.push(`trip_date=${+new Date((0,_index__WEBPACK_IMPORTED_MODULE_1__.formatDbDate)($inputDate.value))}`);
+      }
+
+      window.location.href = `/trips/?${params.join('&')}`;
+    });
+    $clearButton.addEventListener('click', () => {
+      window.location.href = `/trips`;
+    });
+  }
+
+  function setInitInputs() {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+
+    for (let key of params.keys()) {
+      if (key === 'search_country') {
+        $selectCountry.value = params.get(key);
+        $selectCountry.dispatchEvent(new Event('change'));
+      }
+
+      if (key === 'search_camp') {
+        $selectCamp.value = params.get(key);
+        $selectCamp.dispatchEvent(new Event('change'));
+      }
+
+      if (key === 'number_people') {
+        $selectType.value = params.get(key);
+        $selectType.dispatchEvent(new Event('change'));
+      }
+
+      if (key === 'transfer') {
+        $selectTransfer.value = params.get(key);
+        $selectTransfer.dispatchEvent(new Event('change'));
+      }
+
+      if (key === 'count_nights') {
+        $selectCountNights.value = params.get(key);
+        $selectCountNights.dispatchEvent(new Event('change'));
+      }
+
+      if (key === 'trip_date') {
+        $inputDate.value = (0,_index__WEBPACK_IMPORTED_MODULE_1__.formatDate)(new Date(+params.get(key)));
+        $inputDate.dispatchEvent(new Event('change'));
+      }
+    }
+  }
 
   function createArrays() {
     for (let key in window.searchOptions.countries) {
@@ -30289,7 +30391,7 @@ function tripSearch($wrapper) {
 
     for (let key in window.searchOptions.camps) {
       camps.push({
-        name: window.searchOptions.camps[key][0],
+        name: window.searchOptions.camps[key][0] + ' (' + window.searchOptions.camps[key][1] + ')',
         country: window.searchOptions.camps[key][1],
         value: key
       });

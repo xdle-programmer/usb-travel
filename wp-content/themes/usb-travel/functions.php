@@ -302,13 +302,95 @@ add_filter('query_vars', function ($vars) {
 //Функция поиска поездок
 function getTrips($options = array())
 {
+
+
+//    $vars[] = 'search_country';
+//    $vars[] = 'search_camp';
+//    $vars[] = 'number_people';
+//    $vars[] = 'transfer';
+//    $vars[] = 'count_days';
+//    $vars[] = 'count_nights';
+//    $vars[] = 'trip_date';
+
+    $searchOptions = array();
+
+    // Проверяем страну
+    if (isset($options['search_country']) && !isset($options['search_camp'])) {
+        $campArgs = array(
+            'post_type' => 'camp',
+            'numberposts' => -1,
+            'meta_query' => array(
+                array(
+                    'key' => 'страна',
+                    'value' => $options['search_country'],
+                )
+            ),
+        );
+
+        $camps = get_posts($campArgs);
+        $campsIDs = array();
+
+        foreach ($camps as $camp) {
+            $campsIDs[] = $camp->ID;
+        }
+
+
+        if (count($campsIDs) == 0) {
+            return [];
+        }
+
+        $searchOptions[] = array(
+            'key' => 'лагерь',
+            'value' => $campsIDs,
+        );
+    }
+
+    // Проверяем лагерь
+    if (isset($options['search_camp'])) {
+        $searchOptions[] = array(
+            'key' => 'лагерь',
+            'value' => $options['search_camp']
+        );
+    }
+
+    // Проверяем группу
+    if (isset($options['number_people'])) {
+        $searchOptions[] = array(
+            'key' => 'тип_поездки',
+            'value' => $options['number_people']
+        );
+    }
+
+    // Проверяем транспорт
+    if (isset($options['transfer'])) {
+        $searchOptions[] = array(
+            'key' => 'тип_транспорта',
+            'value' => $options['transfer']
+        );
+    }
+
+    // Проверяем количество ночей
+    if (isset($options['count_nights'])) {
+        $searchOptions[] = array(
+            'key' => 'количество_ночей',
+            'value' => $options['count_nights']
+        );
+    }
+
+    // Проверяем количество ночей
+    if (isset($options['trip_date'])) {
+        $searchOptions[] = array(
+            'key' => 'дата_поездки',
+            'type' => 'DATE',
+            'value' => date('Ymd', ($options['trip_date'] / 1000))
+        );
+    }
+
+
     $args = array(
         'post_type' => 'trip',
         'numberposts' => -1,
-//        'meta_query' => array(array(
-//            'key' => 'лагерь',
-//            'value' => '314',
-//        )),
+        'meta_query' => $searchOptions,
     );
 
     $trips = get_posts($args);
@@ -371,7 +453,8 @@ function getCampsAndCountries()
     foreach ($linksUnique as $link) {
         $campsUnique[$link] = [
             get_the_title(apply_filters('wpml_object_id', $link, 'post', TRUE, ICL_LANGUAGE_CODE)),
-            get_the_title(apply_filters('wpml_object_id', get_field('страна', $link), 'post', TRUE, ICL_LANGUAGE_CODE))
+            get_the_title(apply_filters('wpml_object_id', get_field('страна', $link), 'post', TRUE, ICL_LANGUAGE_CODE)),
+            get_field('страна', $link)
         ];
     }
 
@@ -478,6 +561,11 @@ function getCountNumbers()
 //Функция вывода поездок
 function createTripsTable($trips, $options = array())
 {
+
+    if (count($trips) === 0) {
+        echo '<div class="trip-table">Нет поездок</div>';
+        return;
+    }
 
     $campsAndCountries = getCampsAndCountries();
     $groupsType = getGroupsType();
@@ -770,3 +858,76 @@ function loadFrontStyles()
 
 add_action('wp_enqueue_scripts', 'loadFrontStyles');
 add_action('wp_enqueue_scripts', 'loadFrontScripts');
+
+
+add_action('restrict_manage_posts', 'custom_filter_for_posts_html');
+function custom_filter_for_posts_html()
+{
+    //это функция которая отображает сам фильтр
+    ?>
+    <label for="filter-by-field" class="screen-reader-text">Мой фильтр</label>
+    <select name="meta_filter" id="filter-by-field">
+        <option<?php if (!isset($_GET['meta_filter']) || $_GET['meta_filter'] == 0) {
+            echo " selected";
+        } ?> value="0">Лагерь
+        </option>
+        <option<?php if (isset($_GET['meta_filter']) && $_GET['meta_filter'] == 1) {
+            echo " selected";
+        } ?> value="1">Лагерь
+        </option>
+        <option<?php if (isset($_GET['meta_filter']) && $_GET['meta_filter'] == 2) {
+            echo " selected";
+        } ?> value="2">Лагерь
+        </option>
+    </select>
+    <?php
+}
+
+add_filter('request', 'custom_filter_for_posts');
+
+function custom_filter_for_posts($vars)
+{
+    // это функция которая обрабатывает запрос и фильтрует данные
+    // $vars - это стандартные параметры запроса WP? типа как у функции get_posts
+    // мы дописываем только то что нам нужно, не меняя тех значений которые нам не нужны
+
+    global $pagenow;
+    global $post_type;
+
+    $start_in_post_types = array('trip'); // тут нужно указать все типы постов где нужен этот фильтр, например 'page','my_type_post' и т.д.
+
+    if (!empty($pagenow) && $pagenow == 'edit.php' && in_array($post_type, $start_in_post_types)) {
+
+        if (!empty($_GET['meta_filter'])) {
+
+            switch (intval($_GET['meta_filter'])) {//в зависимости от значения поля дописываем информацию для фильтра
+                case 1:
+                    $vars['meta_query'] = array(
+                        "relation" => "AND",
+                        array(
+                            "key" => "adress_meta",
+                            "value" => "",
+                            "compare" => "!="
+                        )
+                    );
+                    break;
+
+                case 2:
+                    $vars['meta_query'] = array(
+                        "relation" => "AND",
+                        array(
+                            "key" => "phone_meta",
+                            "value" => "",
+                            "compare" => "="
+                        )
+                    );
+                    break;
+
+            }
+        }
+
+    }
+
+    return $vars;
+
+}

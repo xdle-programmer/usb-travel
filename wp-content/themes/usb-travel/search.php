@@ -24,12 +24,11 @@ function getUrlQuery($url, $key = null)
 
 $options = getUrlQuery($_SERVER['REQUEST_URI']);
 
-$trips = getTrips();
+$trips = getTrips($options);
 
 ?>
 
     <div class="layout">
-        <br>
         <br>
         <br>
         <br>
@@ -40,7 +39,6 @@ $trips = getTrips();
     </div>
 
     <div class="layout">
-        <br>
         <br>
         <br>
         <br>

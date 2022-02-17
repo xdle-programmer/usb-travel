@@ -14,51 +14,14 @@
 
 get_header();
 ?>
-
-    <div>Главная страница</div>
-
-<?php
-echo '<pre>';
-
-function getCampsIds()
-{
-    $args = array(
-        'post_type' => 'camp',
-        'numberposts' => -1,
-    );
-
-    $camps = get_posts($args);
-    $campsIds = [];
-
-
-    foreach ($camps as $camp) {
-
-        $link = apply_filters('wpml_object_id', $camp->ID, 'post', TRUE, 'ru');
-
-//        icl_object_id( get_the_ID(), $post_type, false, ICL_LANGUAGE_CODE ); // Returns the ID of the current custom post
-
-        echo '<br>';
-//        echo $camp->ID . '  ' . get_the_title($camp->ID) . $camp->ID . '12312312312313----------';
-        echo $link;
-        echo '<br>';
-        echo '<br>';
-        echo '<br>';
-        echo '<br>';
-
-        $campsIds[] = $camp->ID;
-    }
-
-    return $campsIds;
-}
-
-//function getCamp()
-//{
-//}
-
-
-print_r(getCampsIds());
-echo '</pre>';
-?>
+    <div class="layout">
+        <br>
+        <br>
+        <br>
+    </div>
+    <div class="layout">
+        <?php include(dirname(__FILE__) . '/components/trip-search.php'); ?>
+    </div>
 
 <?php
 
