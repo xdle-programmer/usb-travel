@@ -2,7 +2,7 @@
 
     <div class="trip-load__header trip-load__hidden" id="trip-load-header">
         <div class="trip-load__title">Загрузка поездок из файла</div>
-        <a href="#" class="trip-load__example">
+        <a href="<?= plugin_dir_url(__DIR__) ?>/asset/trip_example.xlsx" class="trip-load__example">
             <img class="trip-load__example-icon" src="<?= plugin_dir_url(__DIR__) ?>/asset/xlsx-icon.svg">
             <div class="trip-load__example-text">Скачать образец таблицы</div>
         </a>

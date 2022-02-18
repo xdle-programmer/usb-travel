@@ -865,20 +865,48 @@ function custom_filter_for_posts_html()
 {
     //это функция которая отображает сам фильтр
     ?>
-    <label for="filter-by-field" class="screen-reader-text">Мой фильтр</label>
-    <select name="meta_filter" id="filter-by-field">
-        <option<?php if (!isset($_GET['meta_filter']) || $_GET['meta_filter'] == 0) {
-            echo " selected";
-        } ?> value="0">Лагерь
-        </option>
-        <option<?php if (isset($_GET['meta_filter']) && $_GET['meta_filter'] == 1) {
-            echo " selected";
-        } ?> value="1">Лагерь
-        </option>
-        <option<?php if (isset($_GET['meta_filter']) && $_GET['meta_filter'] == 2) {
-            echo " selected";
-        } ?> value="2">Лагерь
-        </option>
+    <select name="camp" id="filter-by-camp">
+
+        <?php
+
+        $camps = getCampsValues();
+
+        echo '<option value="0">Лагерь</option>';
+
+        foreach ($camps as $camp) {
+            $selected = '';
+
+            if (isset($_GET['camp']) && $_GET['camp'] == $camp['id']) {
+                $selected = 'selected';
+            }
+
+            echo '<option ' . $selected . ' value="' . $camp['id'] . '">' . $camp['title'] . '</option>';
+        }
+
+        ?>
+    </select>
+
+    <select name="transfer" id="filter-by-transfer">
+
+        <?php
+
+        $transfers = getTransportType();
+
+        echo '<option value="0">Транспорт</option>';
+
+        foreach ($transfers as $key => $val) {
+            $transferName = $transfers[$key][0];
+
+            $selected = '';
+
+            if (isset($_GET['transfer']) && $_GET['transfer'] == $key) {
+                $selected = 'selected';
+            }
+
+            echo '<option ' . $selected . ' value="' . $key . '">' . $transferName . '</option>';
+        }
+
+        ?>
     </select>
     <?php
 }
@@ -887,44 +915,32 @@ add_filter('request', 'custom_filter_for_posts');
 
 function custom_filter_for_posts($vars)
 {
-    // это функция которая обрабатывает запрос и фильтрует данные
-    // $vars - это стандартные параметры запроса WP? типа как у функции get_posts
-    // мы дописываем только то что нам нужно, не меняя тех значений которые нам не нужны
 
     global $pagenow;
     global $post_type;
 
-    $start_in_post_types = array('trip'); // тут нужно указать все типы постов где нужен этот фильтр, например 'page','my_type_post' и т.д.
+    $start_in_post_types = array('trip');
 
     if (!empty($pagenow) && $pagenow == 'edit.php' && in_array($post_type, $start_in_post_types)) {
 
-        if (!empty($_GET['meta_filter'])) {
+        $vars['name'] = '';
 
-            switch (intval($_GET['meta_filter'])) {//в зависимости от значения поля дописываем информацию для фильтра
-                case 1:
-                    $vars['meta_query'] = array(
-                        "relation" => "AND",
-                        array(
-                            "key" => "adress_meta",
-                            "value" => "",
-                            "compare" => "!="
-                        )
-                    );
-                    break;
+        $vars['meta_query'] = array('relation' => 'AND');
 
-                case 2:
-                    $vars['meta_query'] = array(
-                        "relation" => "AND",
-                        array(
-                            "key" => "phone_meta",
-                            "value" => "",
-                            "compare" => "="
-                        )
-                    );
-                    break;
-
-            }
+        if (!empty($_GET['camp']) && $_GET['camp'] != 0) {
+            $vars['meta_query'][] = array(
+                'key' => 'лагерь',
+                'value' => $_GET['camp']
+            );
         }
+
+        if (!empty($_GET['transfer']) && $_GET['transfer'] != 0) {
+            $vars['meta_query'][] = array(
+                'key' => 'тип_транспорта',
+                'value' => $_GET['transfer']
+            );
+        }
+
 
     }
 
